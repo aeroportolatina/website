@@ -15,6 +15,7 @@ Output:
 from __future__ import annotations
 
 import csv
+import datetime as dt
 import html
 import json
 import re
@@ -330,13 +331,18 @@ BASE_URL = "https://aeroportolatina.it"
 
 
 def build_sitemap(lastmod):
-    """sitemap.xml con le pagine HTML e i PDF archiviati (rigenerata a ogni build)."""
+    """sitemap.xml con le pagine HTML e i PDF archiviati (rigenerata a ogni build).
+
+    Le pagine del sito usano la data reale di build (contenuto rigenerato a ogni
+    push); i PDF archiviati mantengono la loro data di archiviazione.
+    """
+    build_date = dt.date.today().isoformat()
     pages = [("", "1.0"), ("osservazione/", "0.9"), ("en/", "0.8"),
              ("en/observation/", "0.7"), ("archivio.html", "0.9"),
              ("cronistoria.html", "0.9"), ("atti.html", "0.9"),
              ("rassegna-stampa.html", "0.8"), ("stakeholder.html", "0.7"),
              ("da-reperire.html", "0.6")]
-    entries = [(f"{BASE_URL}/{p}", lastmod, prio) for p, prio in pages]
+    entries = [(f"{BASE_URL}/{p}", build_date, prio) for p, prio in pages]
     if MANIFEST.exists():
         m = json.loads(MANIFEST.read_text(encoding="utf-8"))
         for v in sorted(m.values(), key=lambda x: x.get("file_pdf", "")):
