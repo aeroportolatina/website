@@ -122,7 +122,7 @@ DISCLAIMER = (
     'GitHub</a> o nella <a href="https://t.me/aeroportolatina">chat di comunità</a>.</div>')
 
 
-def page(title: str, body: str) -> str:
+def page(title: str, body: str, slug: str = "") -> str:
     nav = ('<nav class="top"><a href="index.html">&larr; Comitato</a>'
            '<a href="archivio.html">Ricerca e archivio</a>'
            '<a href="cronistoria.html">Cronistoria</a>'
@@ -137,9 +137,11 @@ def page(title: str, body: str) -> str:
 <meta name="description" content="Ricerca e Archivio Documentale del Comitato per l'Aeroporto di Latina: cronistoria, atti istituzionali, portatori di interesse e rassegna stampa sul terzo scalo del Lazio.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="theme-color" content="#0b3d67">
+<link rel="canonical" href="{BASE_URL}/{slug}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{e(title)} — Comitato per l'Aeroporto di Latina">
 <meta property="og:description" content="Archivio documentale aperto sul terzo scalo del Lazio (Aeroporto di Latina).">
+<meta property="og:url" content="{BASE_URL}/{slug}">
 <meta property="og:image" content="https://aeroportolatina.it/brand/social/facebook-group-cover-1640x856.png">
 <meta property="og:site_name" content="Comitato per l'Aeroporto di Latina">
 <meta name="twitter:card" content="summary_large_image">
@@ -181,7 +183,7 @@ def build_archivio(cron, stake, atti=None) -> str:
 <p>Ogni affermazione è ancorata a una fonte verificabile e, dove possibile, a una copia
 PDF archiviata localmente. L'analisi rinvia sempre alla cronistoria tramite ID stabili
 (es. <code>EV-2018-001</code>). Le lacune documentali sono esplicitate.</p>"""
-    return page("Home", body)
+    return page("Home", body, "archivio.html")
 
 
 def build_cronistoria(cron, pm) -> str:
@@ -211,7 +213,7 @@ def build_cronistoria(cron, pm) -> str:
 <div class="meta">📅 {e(x['data'])} · {e(x['categoria_evento'])} · esito: {e(x['esito'])} · affidabilità: {e(x['affidabilita'])}</div>
 {sog}<p>{e(x['descrizione'])}</p>{quote}{fonti_html}{rep}</article>""")
     body = f"<h1>Cronistoria</h1><p class='meta'>{len(cron['eventi'])} eventi · ultimo aggiornamento {e(cron['meta']['ultimo_aggiornamento'])}</p>" + "".join(rows)
-    return page("Cronistoria", body)
+    return page("Cronistoria", body, "cronistoria.html")
 
 
 def build_stakeholder(stake) -> str:
@@ -235,7 +237,7 @@ def build_stakeholder(stake) -> str:
 <div class="meta">{e(s['ruolo'])}{part} · {e(s['ente'])} · <em>{e(s['periodo'])}</em></div>
 <p>{e(s['motivazione'])}</p>
 <div class="meta">↳ eventi: {e(", ".join(s.get('eventi',[])))}</div></article>""")
-    return page("Stakeholder", "".join(out))
+    return page("Stakeholder", "".join(out), "stakeholder.html")
 
 
 def build_atti(atti, pm) -> str:
@@ -278,7 +280,7 @@ def build_atti(atti, pm) -> str:
 <div class="meta">📅 {e(a['data'])}{num}{esito} · <strong>{e(a['ente_sede'])}</strong>{ev}</div>
 <div class="meta"><strong>Promotore:</strong> {e(a['promotore'])} ({e(a['ruolo_partito'])})</div>
 {fonti}{orig}</article>""")
-    return page("Atti", "".join(out))
+    return page("Atti", "".join(out), "atti.html")
 
 
 def _data_articolo(url, riga):
@@ -297,7 +299,7 @@ def _data_articolo(url, riga):
 def build_rassegna(pm) -> str:
     src = DATA / "fonti_triage.csv"
     if not src.exists():
-        return page("Rassegna stampa", "<h1>Rassegna stampa</h1><p>Corpus non ancora generato.</p>")
+        return page("Rassegna stampa", "<h1>Rassegna stampa</h1><p>Corpus non ancora generato.</p>", "rassegna-stampa.html")
     core = [r for r in csv.DictReader(src.open(encoding="utf-8-sig"))
             if r.get("categoria") == "core"]
     for r in core:
@@ -324,7 +326,7 @@ def build_rassegna(pm) -> str:
             titolo = e(r.get("titolo") or r["url"])[:160]
             out.append(f'<div class="rass">{data}<a href="{e(r["url"])}" target="_blank" '
                        f'rel="noopener">{titolo}</a>{pdflink}</div>')
-    return page("Rassegna stampa", "".join(out))
+    return page("Rassegna stampa", "".join(out), "rassegna-stampa.html")
 
 
 BASE_URL = "https://aeroportolatina.it"
@@ -368,7 +370,7 @@ def build_da_reperire(cron) -> str:
 <p><strong>Ente detentore:</strong> {e(x.get('ente_detentore',''))}</p>
 <p><strong>Modalità di richiesta:</strong> {e(x.get('modalita_richiesta',''))}</p>
 <p class="meta">{e(x.get('note_reperimento',''))}</p></article>""")
-    return page("Da reperire", "".join(out))
+    return page("Da reperire", "".join(out), "da-reperire.html")
 
 
 def main() -> None:
